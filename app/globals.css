@@ -1,0 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Instrument+Serif:ital@0;1&display=swap');
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   MedicoZ Design Tokens
+   
+   Aesthetic: Refined medical — warm whites, deep teal, generous whitespace.
+   The goal is "trusted doctor's clinic" not "cold hospital".
+───────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Brand */
+  --teal-50:  #F0FAFA;
+  --teal-100: #CCEEEE;
+  --teal-200: #99DCDC;
+  --teal-400: #2BAAAA;
+  --teal-600: #1A8080;
+  --teal-800: #0D5454;
+  --teal-900: #062E2E;
+
+  /* Neutrals — warm not cold */
+  --stone-50:  #FAFAF8;
+  --stone-100: #F2F1EE;
+  --stone-200: #E4E2DC;
+  --stone-400: #A09D94;
+  --stone-600: #6B6860;
+  --stone-800: #2C2B27;
+  --stone-900: #1A1917;
+
+  /* Semantic */
+  --error:   #C0392B;
+  --success: #1A8060;
+  --warning: #B8860B;
+
+  /* Typography */
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-body:    'DM Sans', system-ui, sans-serif;
+
+  /* Spacing */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-font-smoothing: antialiased; }
+
+body {
+  font-family: var(--font-body);
+  font-size:   15px;
+  color:       var(--stone-800);
+  background:  var(--stone-50);
+  line-height: 1.6;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--stone-200); border-radius: 10px; }
+
+/* ── Form elements ──────────────────────────────────────────────────────── */
+input, textarea {
+  font-family: var(--font-body);
+  font-size:   14px;
+}
+
+button { font-family: var(--font-body); cursor: pointer; }
+
+a { color: var(--teal-600); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30%           { transform: translateY(-5px); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
