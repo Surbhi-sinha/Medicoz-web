@@ -30,7 +30,10 @@
 function apiBase(): string {
     const raw = process.env.NEXT_PUBLIC_API_URL;
     const s = typeof raw === "string" ? raw.trim() : "";
-    return (s || "http://localhost:4000").replace(/\/$/, "");
+    if(process.env.NEXT_ENVIRONMENT === "development") {
+        return (s || "http://localhost:4000").replace(/\/$/, "");
+    }
+    return (s || "https://medicoz-api.onrender.com").replace(/\/$/, "");
 }
 
 const BASE = apiBase();
