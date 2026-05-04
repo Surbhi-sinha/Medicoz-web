@@ -101,6 +101,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     const setTyping = useChatStore((s) => s.setTyping);
     const clearTyping = useChatStore((s) => s.clearTyping);
     const updateMessageStatus = useChatStore((s) => s.updateMessageStatus);
+    const markAllMessagesRead = useChatStore((s) => s.markAllMessagesRead);
     const incrementUnread = useChatStore((s) => s.incrementUnread);
     const activeRoomId = useChatStore((s) => s.activeRoomId);
 
@@ -149,9 +150,14 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
                 clearTyping(data.roomId, data.userId);
                 break;
 
-            // Read receipts — turn ticks green
+            // Delivery receipt — flip to double grey ticks
+            case 'message_delivered':
+                updateMessageStatus(data.roomId, data.messageId, 'delivered');
+                break;
+
+            // Read receipts — turn all ticks in the room green instantly
             case 'messages_read':
-                updateMessageStatus(data.roomId, data.lastMessageId, 'read');
+                markAllMessagesRead(data.roomId);
                 break;
 
             case 'error':
@@ -160,7 +166,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
                 }
                 break;
         }
-    }, [activeRoomId, addMessage, updateRoomPreview, incrementUnread, send, setTyping, clearTyping, updateMessageStatus]);
+    }, [activeRoomId, addMessage, updateRoomPreview, incrementUnread, send, setTyping, clearTyping, updateMessageStatus, markAllMessagesRead]);
 
     useEffect(() => {
         handleGlobalEventRef.current = handleGlobalEvent;

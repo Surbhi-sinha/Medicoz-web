@@ -118,8 +118,11 @@ interface ChatState {
   // Replaces a temp optimistic message with the confirmed server version
   confirmMessage:  (roomId: string, tempId: string, confirmed: Message) => void;
 
-  // Updates tick status: delivered / read
+  // Updates tick status: delivered 
   updateMessageStatus: (roomId: string, messageId: string, status: Message['status']) => void;
+
+  // Marks every message in the room as read (used when receiver opens the room)
+  markAllMessagesRead: (roomId: string) => void;
 
   // ── Typing ─────────────────────────────────────────────────────────────
  /**
@@ -224,6 +227,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
         ...s.messagesByRoom,
         [roomId]: (s.messagesByRoom[roomId] ?? []).map((m) =>
           m._id === messageId ? { ...m, status } : m
+        ),
+      },
+    })),
+
+  markAllMessagesRead: (roomId) =>
+    set((s) => ({
+      messagesByRoom: {
+        ...s.messagesByRoom,
+        [roomId]: (s.messagesByRoom[roomId] ?? []).map((m) =>
+          m.status !== 'read' ? { ...m, status: 'read' } : m
         ),
       },
     })),
