@@ -123,6 +123,11 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
                 addMessage(data);
                 updateRoomPreview(data.roomId, data.content, data.createdAt);
 
+                // Play notification sound
+                const audio = new Audio('/sounds/medicoz-notification-tune.mp3');
+                audio.volume = 0.5;
+                audio.play().catch(console.error);
+
                 // Only increment badge if this room is NOT currently open
                 if (data.roomId !== activeRoomId) {
                     incrementUnread(data.roomId);

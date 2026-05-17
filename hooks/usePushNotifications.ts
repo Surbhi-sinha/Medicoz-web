@@ -66,6 +66,7 @@ export const usePushNotifications = () => {
                 new Notification(title, {
                   body,
                   icon: '/medicoz.png',
+                  silent: false,
                 });
               
                 // Play sound
