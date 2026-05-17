@@ -1,9 +1,14 @@
 import type { Metadata } from 'next';
 import '@/app/globals.css';
+import { PushNotificationProvider } from '@/components/PushNotifications/PushNotificationProvider';
+
 
 export const metadata: Metadata = {
   title: 'MedicoZ',
   description: 'Secure healthcare messaging.',
+  icons: {
+    icon: '/medicoz.png',
+  },
 };
 
 /**
@@ -11,9 +16,14 @@ export const metadata: Metadata = {
  * Chat chrome (sidebar, WebSocket, room fetch) lives in `app/chat/layout.tsx`.
  */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  
+  
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <PushNotificationProvider/>
+        {children}
+        </body>
     </html>
   );
 }

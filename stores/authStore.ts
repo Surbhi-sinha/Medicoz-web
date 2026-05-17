@@ -54,7 +54,7 @@ interface AuthState {
    * Called on explicit logout. Also called by the WebSocket context
    * if the server sends a 4001 (auth expired) close code.
    */
-  clearAuth: () => void;
+  clearAuth: () => Promise<void>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -72,7 +72,28 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isReady: false,
       setAuth: (token, user) => set({ token, user, isReady: true }),
-      clearAuth: () => set({ token: null, user: null, isReady: true }),
+      clearAuth: async() => {
+        const {token} = useAuthStore.getState();
+        
+        //remove the FCM token from the backend before clearing the auth token
+        if(token) {
+          try{
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/token`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              platform: 'web',
+            }),
+          })}
+          catch(error) {
+            console.error('Error removing FCM token:', error);
+          }
+        }
+        set({ token: null, user: null, isReady: true });
+      },
     }),
     {
       name: 'medicoz-auth',

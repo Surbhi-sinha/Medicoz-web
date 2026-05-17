@@ -1,6 +1,11 @@
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'MedicoZ — Sign in' };
+export const metadata: Metadata = { 
+  title: 'MedicoZ — Sign in',
+  icons: {
+    icon: '/medicoz.png',
+  },
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Auth Layout
