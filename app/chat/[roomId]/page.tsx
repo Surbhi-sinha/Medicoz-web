@@ -194,22 +194,13 @@ export default function RoomPage({ params }: { params: Promise<{ roomId: string 
   const groups = buildMessageGroups(messages);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#FAFAF8' }}>
-
+    <div className="room-view">
       <RoomHeader roomId={roomId} />
 
-      {/* Message list */}
       <div
         ref={listRef}
         onScroll={handleScroll}
-        style={{
-          flex:           1,
-          overflowY:      'auto',
-          padding:        '20px 20px 8px',
-          display:        'flex',
-          flexDirection:  'column',
-          gap:            '2px',
-        }}
+        className="room-view__messages"
       >
         {/* Load more trigger */}
         {hasMore && (
@@ -273,7 +264,34 @@ export default function RoomPage({ params }: { params: Promise<{ roomId: string 
         <div ref={bottomRef}/>
       </div>
 
-      <ChatInput roomId={roomId} onSend={sendMessage} />
+      <footer className="room-view__composer">
+        <ChatInput roomId={roomId} onSend={sendMessage} />
+      </footer>
+
+      <style>{`
+        .room-view {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+          min-height: 0;
+          height: 100%;
+          overflow: hidden;
+          background: var(--surface-page);
+        }
+        .room-view__messages {
+          flex: 1;
+          min-height: 0;
+          overflow-y: auto;
+          padding: 20px 20px 8px;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        .room-view__composer {
+          flex-shrink: 0;
+          width: 100%;
+        }
+      `}</style>
     </div>
   );
 }

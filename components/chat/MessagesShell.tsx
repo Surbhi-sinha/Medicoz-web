@@ -153,7 +153,8 @@ export function MessagesShell({
       <style>{`
         .messages-shell {
           display: flex;
-          min-height: 100vh;
+          height: 100vh;
+          overflow: hidden;
           background: var(--surface-page);
         }
         .messages-shell__nav { height: 100vh; position: sticky; top: 0; }
@@ -162,6 +163,7 @@ export function MessagesShell({
           display: flex;
           flex-direction: column;
           min-width: 0;
+          min-height: 0;
         }
         .messages-shell__header {
           display: flex;
@@ -215,6 +217,8 @@ export function MessagesShell({
           display: flex;
           flex-direction: column;
           min-width: 0;
+          min-height: 0;
+          overflow: hidden;
           background: var(--surface-card);
         }
         .messages-shell__info {

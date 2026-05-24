@@ -81,6 +81,8 @@ export function ChatInput({ roomId, onSend }: {
       </p>
       <style>{`
         .chat-input-wrap {
+          width: 100%;
+          box-sizing: border-box;
           padding: 16px 20px;
           border-top: 1px solid var(--border-default);
           background: var(--surface-card);
