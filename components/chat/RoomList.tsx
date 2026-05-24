@@ -5,8 +5,7 @@ import { useChatStore } from '@/stores/chatStore';
 import { useAuthStore } from '@/stores/authStore';
 import { api } from '@/lib/api';
 import type { Room } from '@/stores/chatStore';
-
-const MONGO_ID_RE = /^[a-f\d]{24}$/i;
+import { isValidPhoneInput, normalizePhoneDigits } from '@/lib/phone';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -166,30 +165,31 @@ export function RoomList() {
   const connected = useChatStore((s) => s.connected);
   const setActiveRoom = useChatStore((s) => s.setActiveRoom);
 
-  const [peerId, setPeerId] = useState('');
+  const [peerPhone, setPeerPhone] = useState('');
   const [startLoading, setStartLoading] = useState(false);
   const [startError, setStartError] = useState('');
 
   async function startDirectChat() {
     setStartError('');
-    const id = peerId.trim();
+    const raw = peerPhone.trim();
     if (!token) {
       setStartError('Not signed in.');
       return;
     }
-    if (!MONGO_ID_RE.test(id)) {
-      setStartError('Enter a valid 24-character user ID from your database.');
+    if (!isValidPhoneInput(raw)) {
+      setStartError('Enter a valid 10-digit mobile number.');
       return;
     }
-    if (user?.id && id === user.id) {
-      setStartError('Use another user’s ID, not your own.');
+    const phone = normalizePhoneDigits(raw);
+    if (user?.phone && normalizePhoneDigits(user.phone) === phone) {
+      setStartError('Enter someone else’s number, not your own.');
       return;
     }
     setStartLoading(true);
     try {
       const created = await api.chat.createRoom(token, {
         type: 'direct',
-        participants: [id],
+        participantPhones: [phone],
       });
       const roomId =
         typeof created._id === 'string' ? created._id : created._id?.toString?.();
@@ -201,7 +201,7 @@ export function RoomList() {
       useChatStore.setState((s) => ({
         rooms: [room, ...s.rooms.filter((r) => r._id !== room._id)],
       }));
-      setPeerId('');
+      setPeerPhone('');
       setActiveRoom(roomId);
       router.push(`/chat/${roomId}`);
     } catch (e) {
@@ -251,7 +251,7 @@ export function RoomList() {
         />
       </div>
 
-      {/* Start 1:1 chat — other user’s MongoDB _id (see users collection) */}
+      {/* Start 1:1 chat by registered mobile number */}
       <div
         style={{
           padding: '0 12px 12px',
@@ -272,9 +272,13 @@ export function RoomList() {
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
           <input
-            value={peerId}
-            onChange={(e) => setPeerId(e.target.value)}
-            placeholder="Other user’s ID"
+            type="tel"
+            inputMode="numeric"
+            autoComplete="tel"
+            value={peerPhone}
+            onChange={(e) => setPeerPhone(e.target.value)}
+            placeholder="Mobile number"
+            aria-label="Other person’s mobile number"
             disabled={startLoading || !token}
             onKeyDown={(e) => e.key === 'Enter' && startDirectChat()}
             style={{
@@ -291,7 +295,7 @@ export function RoomList() {
           />
           <button
             type="button"
-            disabled={startLoading || !peerId.trim() || !token}
+            disabled={startLoading || !peerPhone.trim() || !token}
             onClick={startDirectChat}
             style={{
               padding: '8px 12px',
@@ -302,8 +306,8 @@ export function RoomList() {
               fontSize: '12px',
               fontWeight: 600,
               cursor:
-                startLoading || !peerId.trim() || !token ? 'not-allowed' : 'pointer',
-              opacity: startLoading || !peerId.trim() || !token ? 0.5 : 1,
+                startLoading || !peerPhone.trim() || !token ? 'not-allowed' : 'pointer',
+              opacity: startLoading || !peerPhone.trim() || !token ? 0.5 : 1,
               flexShrink: 0,
             }}
           >
@@ -329,8 +333,7 @@ export function RoomList() {
               lineHeight: 1.35,
             }}
           >
-            Paste the other person’s <code style={{ fontSize: '10px' }}>_id</code> from
-            MongoDB <code style={{ fontSize: '10px' }}>users</code> (24 hex characters).
+            Enter the phone number they used to sign up on MedicoZ (10 digits).
           </p>
         )}
       </div>

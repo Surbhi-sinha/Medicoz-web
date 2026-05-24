@@ -82,13 +82,13 @@ export function MessageBubble({ message, showAvatar }: {
       }}>
         {message.type === 'text' ? (
           <div style={{
-            padding: '9px 13px',
+            padding: '10px 14px',
             borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-            fontSize: '13px',
+            fontSize: '14px',
             lineHeight: '1.5',
-            background: '#E1F5EE',
-            border: `0.5px solid #9FE1CB`,
-            color: '#085041',
+            background: isMine ? 'var(--teal-800)' : 'var(--surface-active)',
+            border: isMine ? 'none' : '1px solid #BAE6FD',
+            color: isMine ? '#fff' : 'var(--stone-900)',
             wordBreak: 'break-word',
           }}>
             {message.content}

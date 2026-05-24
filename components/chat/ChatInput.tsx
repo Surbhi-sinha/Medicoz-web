@@ -51,77 +51,88 @@ export function ChatInput({ roomId, onSend }: {
   const isEmpty = value.trim().length === 0;
 
   return (
-    <div style={{ padding: '10px 14px', borderTop: '0.5px solid var(--color-border-tertiary)' }}>
-      {/* Input row */}
-      <div style={{
-        display:       'flex',
-        alignItems:    'flex-end',
-        gap:           '8px',
-        border:        '0.5px solid var(--color-border-secondary)',
-        borderRadius:  'var(--border-radius-lg)',
-        padding:       '8px 12px',
-        background:    'var(--color-background-secondary)',
-        transition:    'border-color .15s',
-      }}
-        onFocus={(e) => (e.currentTarget.style.borderColor = '#1D9E75')}
-        onBlur={(e)  => (e.currentTarget.style.borderColor = 'var(--color-border-secondary)')}
-      >
+    <div className="chat-input-wrap">
+      <div className="chat-input-box">
         <textarea
           ref={textareaRef}
           value={value}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          placeholder="Type a message..."
+          placeholder="Type a secure message…"
           rows={1}
-          style={{
-            flex:       1,
-            border:     'none',
-            background: 'transparent',
-            fontSize:   '13px',
-            color:      'var(--color-text-primary)',
-            outline:    'none',
-            resize:     'none',
-            lineHeight: '1.5',
-            minHeight:  '22px',
-            maxHeight:  '120px',
-            overflowY:  'auto',
-            fontFamily: 'var(--font-sans)',
-          }}
+          aria-label="Message"
         />
-
-        {/* Send button */}
         <button
+          type="button"
+          className="chat-input-send"
           onClick={handleSend}
           disabled={isEmpty}
-          style={{
-            width:        '32px',
-            height:       '32px',
-            borderRadius: '50%',
-            background:   isEmpty ? 'var(--color-border-tertiary)' : '#1D9E75',
-            border:       'none',
-            cursor:       isEmpty ? 'default' : 'pointer',
-            display:      'flex',
-            alignItems:   'center',
-            justifyContent: 'center',
-            flexShrink:   0,
-            transition:   'background .15s, transform .1s',
-            transform:    'scale(1)',
-          }}
-          onMouseDown={(e) => { if (!isEmpty) (e.currentTarget.style.transform = 'scale(0.92)'); }}
-          onMouseUp={(e)   => { (e.currentTarget.style.transform = 'scale(1)'); }}
+          aria-label="Send message"
         >
-          {/* Send icon (paper plane) */}
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"/>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          Send message
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" aria-hidden>
+            <line x1="22" y1="2" x2="11" y2="13" />
+            <polygon points="22 2 15 22 11 13 2 9 22 2" />
           </svg>
         </button>
       </div>
-
-      {/* Hint */}
-      <div style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginTop: '4px', paddingLeft: '4px' }}>
-        Enter to send · Shift+Enter for new line
-      </div>
+      <p className="chat-input-legal">
+        This conversation is encrypted and follows HIPAA security standards.
+      </p>
+      <style>{`
+        .chat-input-wrap {
+          padding: 16px 20px;
+          border-top: 1px solid var(--border-default);
+          background: var(--surface-card);
+        }
+        .chat-input-box {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          border: 1px solid var(--border-default);
+          border-radius: var(--radius-md);
+          padding: 14px;
+          background: var(--surface-page);
+        }
+        .chat-input-box textarea {
+          width: 100%;
+          border: none;
+          background: transparent;
+          font-size: 14px;
+          color: var(--stone-900);
+          outline: none;
+          resize: none;
+          min-height: 48px;
+          max-height: 120px;
+          font-family: var(--font-body);
+        }
+        .chat-input-send {
+          align-self: flex-end;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 18px;
+          border-radius: var(--radius-sm);
+          background: var(--teal-800);
+          color: #fff;
+          border: none;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+        .chat-input-send:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        .chat-input-legal {
+          text-align: center;
+          font-size: 10px;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          color: var(--stone-400);
+          margin: 10px 0 0;
+        }
+      `}</style>
     </div>
   );
 }

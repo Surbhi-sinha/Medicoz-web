@@ -25,36 +25,11 @@ import { useRouter }           from 'next/navigation';
 import Link                    from 'next/link';
 import { api }                 from '@/lib/api';
 import { useAuthStore }        from '@/stores/authStore';
-
-// ─── Field component (same as login, local to auth forms) ────────────────────
-
-function Field({
-  label, type = 'text', value, onChange, placeholder, error,
-}: {
-  label: string; type?: string; value: string;
-  onChange: (v: string) => void; placeholder?: string; error?: string;
-}) {
-  const [focused, setFocused] = useState(false);
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-      <label style={{ fontSize: '13px', fontWeight: 500, color: '#2C2B27' }}>{label}</label>
-      <input
-        type={type} value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        placeholder={placeholder}
-        style={{
-          padding: '11px 14px', borderRadius: '10px', outline: 'none',
-          border: `1.5px solid ${error ? '#C0392B' : focused ? '#1A8080' : '#E4E2DC'}`,
-          fontSize: '14px', color: '#1A1917', background: '#fff',
-          transition: 'border-color .15s', width: '100%',
-        }}
-      />
-      {error && <span style={{ fontSize: '12px', color: '#C0392B' }}>{error}</span>}
-    </div>
-  );
-}
+import { RoleSelector }        from '@/components/auth/RoleSelector';
+import { AuthField }           from '@/components/auth/AuthField';
+import { Btn }                 from '@/components/ui/ClinicalPrimitives';
+import { getDashboardPath }    from '@/lib/roles';
+import type { UserRole }       from '@/lib/roles';
 
 // ─── Password strength indicator ─────────────────────────────────────────────
 
@@ -110,6 +85,7 @@ export default function SignupPage() {
     password:  '',
   });
 
+  const [role,         setRole]         = useState<UserRole>('PATIENT');
   const [fieldErrors,  setFieldErrors]  = useState<Record<string, string>>({});
   const [serverError,  setServerError]  = useState('');
   const [loading,      setLoading]      = useState(false);
@@ -149,7 +125,7 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      const response = await api.auth.signup(form);
+      const response = await api.auth.signup({ ...form, role });
 
       setAuth(response.access_token, {
         id:        response.user.id,
@@ -157,10 +133,11 @@ export default function SignupPage() {
         phone:     response.user.phone,
         firstName: response.user.firstName,
         lastName:  response.user.lastName,
-        role:      'PATIENT',
+        role:      response.user.role,
+        profileId: response.user.profileId,
       });
 
-      router.push('/chat');
+      router.push(getDashboardPath(response.user.role));
 
     } catch (err: any) {
       setServerError(err.message ?? 'Something went wrong. Please try again.');
@@ -170,102 +147,99 @@ export default function SignupPage() {
   };
 
   return (
-    <div style={{ animation: 'fadeUp .35s ease both' }}>
-
-      <div style={{ marginBottom: '28px' }}>
-        <h1 style={{
-          fontFamily:   "'Instrument Serif', Georgia, serif",
-          fontSize:     '30px', color: '#1A1917',
-          marginBottom: '6px', letterSpacing: '-0.3px',
-        }}>
+    <>
+      <div style={{ marginBottom: 28 }}>
+        <h1 className="clinical-display" style={{ fontSize: 30, marginBottom: 8, fontWeight: 400 }}>
           Create account
         </h1>
-        <p style={{ fontSize: '14px', color: '#6B6860' }}>
+        <p style={{ fontSize: 14, color: 'var(--stone-600)', margin: 0 }}>
           Join MedicoZ — secure healthcare messaging
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-
-        {/* Name row — two fields side by side */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-          <Field label="First name" value={form.firstName}
-            onChange={updateField('firstName')} placeholder="Arun"
-            error={fieldErrors.firstName} />
-          <Field label="Last name" value={form.lastName}
-            onChange={updateField('lastName')} placeholder="Kumar"
-            error={fieldErrors.lastName} />
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }} noValidate>
+        <div>
+          <span className="clinical-label" style={{ marginBottom: 10, display: 'block' }}>
+            Register as
+          </span>
+          <RoleSelector value={role} onChange={setRole} />
         </div>
 
-        <Field label="Email address" type="email" value={form.email}
-          onChange={updateField('email')} placeholder="arun@hospital.com"
-          error={fieldErrors.email} />
+        <div className="auth-name-grid">
+          <AuthField
+            label="First name"
+            value={form.firstName}
+            onChange={(e) => updateField('firstName')(e.target.value)}
+            placeholder="Arun"
+            error={fieldErrors.firstName}
+          />
+          <AuthField
+            label="Last name"
+            value={form.lastName}
+            onChange={(e) => updateField('lastName')(e.target.value)}
+            placeholder="Kumar"
+            error={fieldErrors.lastName}
+          />
+        </div>
 
-        <Field label="Phone number" type="tel" value={form.phone}
-          onChange={updateField('phone')} placeholder="9876543210"
-          error={fieldErrors.phone} />
+        <AuthField
+          label="Email address"
+          type="email"
+          value={form.email}
+          onChange={(e) => updateField('email')(e.target.value)}
+          placeholder="arun@hospital.com"
+          error={fieldErrors.email}
+        />
 
-        {/* Password with strength indicator below */}
+        <AuthField
+          label="Phone number"
+          type="tel"
+          value={form.phone}
+          onChange={(e) => updateField('phone')(e.target.value)}
+          placeholder="9876543210"
+          error={fieldErrors.phone}
+        />
+
         <div>
-          <Field label="Password" type="password" value={form.password}
-            onChange={updateField('password')} placeholder="Minimum 8 characters"
-            error={fieldErrors.password} />
+          <AuthField
+            label="Password"
+            type="password"
+            value={form.password}
+            onChange={(e) => updateField('password')(e.target.value)}
+            placeholder="Minimum 8 characters"
+            error={fieldErrors.password}
+          />
           <PasswordStrength password={form.password} />
         </div>
 
         {serverError && (
-          <div style={{
-            padding: '10px 14px', borderRadius: '8px',
-            background: '#FDF0EE', border: '1px solid #F5C4B3',
-            fontSize: '13px', color: '#C0392B',
-            display: 'flex', gap: '8px', alignItems: 'center',
-          }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-              <line x1="12" y1="9" x2="12" y2="13"/>
-              <line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
+          <div role="alert" style={{ padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: '#FDF0EE', border: '1px solid #F5C4B3', fontSize: 13, color: 'var(--error)' }}>
             {serverError}
           </div>
         )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            padding: '13px', borderRadius: '10px',
-            background: loading ? '#99DCDC' : '#1A8080',
-            color: '#fff', fontSize: '14px', fontWeight: 500,
-            border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
-            transition: 'background .15s, transform .1s',
-            display: 'flex', alignItems: 'center',
-            justifyContent: 'center', gap: '8px', marginTop: '4px',
-          }}
-          onMouseDown={(e) => { if (!loading) e.currentTarget.style.transform = 'scale(0.98)'; }}
-          onMouseUp={(e)   => { e.currentTarget.style.transform = 'scale(1)'; }}
-        >
-          {loading && (
-            <div style={{
-              width: '16px', height: '16px',
-              border: '2px solid rgba(255,255,255,0.3)',
-              borderTopColor: '#fff', borderRadius: '50%',
-              animation: 'spin .65s linear infinite',
-            }}/>
-          )}
+        <Btn type="submit" variant="primary" disabled={loading} style={{ width: '100%' }}>
           {loading ? 'Creating account…' : 'Create account'}
-        </button>
+        </Btn>
       </form>
 
-      <p style={{ textAlign: 'center', fontSize: '14px', color: '#6B6860', marginTop: '24px' }}>
+      <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--stone-600)', marginTop: 24 }}>
         Already have an account?{' '}
-        <Link href="/login" style={{ color: '#1A8080', fontWeight: 500 }}>Sign in</Link>
+        <Link href="/login" style={{ color: 'var(--teal-800)', fontWeight: 500, textDecoration: 'none' }}>
+          Sign in
+        </Link>
       </p>
 
       <style>{`
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes spin   { to   { transform: rotate(360deg); } }
+        .auth-name-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
+        @media (max-width: 480px) {
+          .auth-name-grid { grid-template-columns: 1fr; }
+        }
       `}</style>
-    </div>
+    </>
   );
 }

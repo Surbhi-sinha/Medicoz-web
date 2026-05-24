@@ -28,13 +28,16 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
+import type { UserRole } from '@/lib/roles';
+
 export interface AuthUser {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
   phone?: string;
-  role: string;
+  role: UserRole;
+  profileId?: string;
 }
 
 interface AuthState {

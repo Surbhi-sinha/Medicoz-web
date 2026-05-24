@@ -115,11 +115,31 @@ async function get<TResponse>(
     return parseApiJson<TResponse>(json, path, response.ok);
 }
 
+async function put<TResponse>(
+    path: string,
+    body: unknown,
+    token: string,
+): Promise<TResponse> {
+    const res = await fetch(`${BASE}${path}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+    });
+    const json = await res.json();
+    return parseApiJson<TResponse>(json, path, res.ok);
+}
+
+import type { UserRole } from "./roles";
+
 // ── Auth ─────────────────────────────────────────────────────────────────────
 
 export interface LoginPayload {
     email: string;
     password: string;
+    role: UserRole;
 }
 export interface SignupPayload {
     email: string;
@@ -127,6 +147,7 @@ export interface SignupPayload {
     firstName: string;
     lastName: string;
     password: string;
+    role: UserRole;
 }
 export interface AuthResponse {
     access_token: string;
@@ -136,7 +157,47 @@ export interface AuthResponse {
         phone: string;
         firstName: string;
         lastName: string;
+        role: UserRole;
+        profileId?: string;
     };
+}
+
+export interface PatientProfile {
+    id: string;
+    userId: string;
+    name: string;
+    gender: string;
+    age: number;
+    address: string;
+    phone: string;
+    email: string;
+    image: string;
+}
+
+export interface DoctorProfile {
+    id: string;
+    userId: string;
+    name: string;
+    department: string;
+    rating: number;
+    clinicalAddress: string;
+    experience: number;
+    patientsCount: number;
+    image: string;
+    about: string;
+    consultationPrice: number;
+    contactNumber: string;
+}
+
+export type ProfileMeResponse =
+    | { type: "patient"; profile: PatientProfile }
+    | { type: "doctor"; profile: DoctorProfile };
+
+export interface DoctorsListResponse {
+    items: DoctorProfile[];
+    total: number;
+    page: number;
+    limit: number;
 }
 
 // ── Exported API calls ───────────────────────────────────────────────────────
@@ -160,6 +221,27 @@ export const api = {
          * Matches: curl --data '{ "email", "phone", "firstName", "lastName", "password" }'
          */
         signup: (body: SignupPayload) => post<AuthResponse>("/auth/signup", body),
+        me: (token: string) => get<AuthResponse["user"]>("/auth/me", token),
+    },
+    profile: {
+        getMe: (token: string) => get<ProfileMeResponse>("/profile/me", token),
+        updateMe: (token: string, body: Record<string, unknown>) =>
+            put<ProfileMeResponse>("/profile/me", body, token),
+        listDoctors: (
+            token: string,
+            params?: { page?: number; limit?: number; search?: string; department?: string },
+        ) => {
+            const q = new URLSearchParams();
+            if (params?.page) q.set("page", String(params.page));
+            if (params?.limit) q.set("limit", String(params.limit));
+            if (params?.search) q.set("search", params.search);
+            if (params?.department) q.set("department", params.department);
+            const qs = q.toString();
+            return get<DoctorsListResponse>(
+                `/profile/doctors${qs ? `?${qs}` : ""}`,
+                token,
+            );
+        },
     },
     chat: {
         /** GET /chat/rooms — returns all rooms the authenticated user participates in */
@@ -171,14 +253,15 @@ export const api = {
             get<any>(`/chat/rooms/${roomId}`, token),
         /**
          * POST /chat/rooms — start or reuse a direct chat, or create a group.
-         * For a 1:1 chat: `{ type: 'direct', participants: [otherUserMongoId] }`.
-         * The API adds you as a participant; duplicate direct rooms are collapsed server-side.
+         * For 1:1 by phone: `{ type: 'direct', participantPhones: ['9876543210'] }`.
+         * Or by user id: `{ type: 'direct', participants: [otherUserMongoId] }`.
          */
         createRoom: (
             token: string,
             body: {
                 type: "direct" | "group";
-                participants: string[];
+                participants?: string[];
+                participantPhones?: string[];
                 name?: string;
             },
         ) => post<any>("/chat/rooms", body, token),
